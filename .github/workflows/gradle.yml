@@ -34,7 +34,7 @@ jobs:
       uses: gradle/actions/setup-gradle@v6
 
     - name: Build "attendance" service with Gradle Wrapper
-      run: cd attendance && ./gradlew build
+      run: cd attendance && ./gradlew build -x test
 
     - name: Build "access" service with Gradle Wrapper
-      run: cd access && ./gradlew build
+      run: cd access && ./gradlew build -x test

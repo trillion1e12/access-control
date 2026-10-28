@@ -1,15 +1,15 @@
 // https://hyperskill.org/learn/step/32430
+// https://dev.to/mspilari/spring-security-with-jwt-2bl6
+// https://youtu.be/KYNR5js2cXE
 package com.tmc.attendance.security;
 
-import java.security.KeyPair;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.UUID;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -30,22 +30,19 @@ import com.tmc.attendance.user.UserRole;
 
 @Configuration
 public class SecurityConfig {
+    @Value("${jwt.public.key}")
+    private RSAPublicKey publicKey;
+
+    @Value("${jwt.private.key}")
+    private RSAPrivateKey privateKey;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    // @Bean
-    // public UserDetailsService userDetailsService() {
-    // UserDetails user1 = User.withUsername("tri")
-    // .password(passwordEncoder().encode("password"))
-    // .roles("USER")
-    // .build();
-    // return new InMemoryUserDetailsManager(user1);
-    // }
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity, JwtDecoder jwtDecoder) {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         grantedAuthoritiesConverter.setAuthoritiesClaimName("authorities");
         grantedAuthoritiesConverter.setAuthorityPrefix("");
@@ -55,7 +52,7 @@ public class SecurityConfig {
         return httpSecurity
                 .httpBasic(Customizer.withDefaults())
                 .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt
-                        .decoder(jwtDecoder)
+                        .decoder(jwtDecoder())
                         .jwtAuthenticationConverter(authenticationConverter)
                 ))
                 .authorizeHttpRequests(auth -> auth
@@ -69,24 +66,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(KeyPair keyPair) {
-        return NimbusJwtDecoder
-                .withPublicKey((RSAPublicKey) keyPair.getPublic())
-                .build();
+    public JwtDecoder jwtDecoder() {
+        return NimbusJwtDecoder.withPublicKey(publicKey).build();
     }
 
     @Bean
-    public JWKSource<SecurityContext> jwkSource(KeyPair keyPair) {
-        RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
-                .privateKey(keyPair.getPrivate())
-                .keyID(UUID.randomUUID().toString())
-                .build();
-        JWKSet jwkSet = new JWKSet(rsaKey);
-        return new ImmutableJWKSet<>(jwkSet);
-    }
-
-    @Bean
-    public JwtEncoder jwtEncoder(JWKSource<SecurityContext> jwkSource) {
-        return new NimbusJwtEncoder(jwkSource);
+    public JwtEncoder jwtEncoder() {
+        RSAKey jwk = new RSAKey.Builder(publicKey).privateKey(privateKey).build();
+        var jwks = new ImmutableJWKSet<>(new JWKSet(jwk));
+        return new NimbusJwtEncoder(jwks);
     }
 }

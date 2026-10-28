@@ -7,4 +7,31 @@ A Java - Spring Boot implementation for 2 services of the serviced-based archite
 
 ## How to run
 
-To do
+1. Generate RSA key pair (for JWT):
+
+    ```bash
+    openssl genrsa > private.key
+    openssl rsa -in private.key -pubout -out public.key
+    ```
+
+2. Copy the keys to resources folders:
+
+    ```bash
+    cp public.key private.key attendance/src/main/resources/
+    cp public.key access/src/main/resources/
+    rm public.key private.key
+    ```
+
+3. Run the 2 services (on 2 terminal):
+
+    Terminal 1
+
+    ```bash
+    cd attendance && ./gradlew bootRun
+    ```
+
+    Terminal 2
+    ```bash
+    cd access && ./gradlew bootRun
+    ```
+

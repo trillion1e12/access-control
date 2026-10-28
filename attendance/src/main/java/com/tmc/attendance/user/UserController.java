@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.UUID;
 
 import jakarta.validation.Valid;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,4 +52,10 @@ public class UserController {
     public UserResponse deleteUser(@PathVariable UUID id) {
         return userService.deleteUser(id);
     }
+
+    @PostMapping("/token")
+    public String token(@AuthenticationPrincipal UserDetails userDetails) {
+        return userService.getToken(userDetails);
+    }
+
 }

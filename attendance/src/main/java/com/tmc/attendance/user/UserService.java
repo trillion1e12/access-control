@@ -67,7 +67,7 @@ public class UserService {
                 .subject(userDetails.getUsername())
                 .issuedAt(Instant.now())
                 .expiresAt(Instant.now().plus(600, ChronoUnit.SECONDS))
-                .claim("scope", authorities)
+                .claim("authorities", authorities)
                 .build();
         return jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
     }

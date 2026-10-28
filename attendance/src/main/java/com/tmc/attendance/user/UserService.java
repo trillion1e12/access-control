@@ -1,8 +1,15 @@
 package com.tmc.attendance.user;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import com.tmc.attendance.user.dto.CreateUserRequest;
@@ -13,10 +20,12 @@ import com.tmc.attendance.user.dto.UserResponse;
 public class UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final JwtEncoder jwtEncoder;
 
-    public UserService(UserRepository userRepository, UserMapper userMapper) {
+    public UserService(UserRepository userRepository, UserMapper userMapper, JwtEncoder jwtEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.jwtEncoder = jwtEncoder;
     }
 
     public UserResponse createUser(CreateUserRequest request) {
@@ -47,5 +56,19 @@ public class UserService {
         existingUser.setActive(false);
         AppUser deletedUser = userRepository.save(existingUser);
         return userMapper.toResponse(deletedUser);
+    }
+
+    public String getToken(UserDetails userDetails) {
+        List<String> authorities = userDetails.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+        JwtClaimsSet claimsSet = JwtClaimsSet.builder()
+                .subject(userDetails.getUsername())
+                .issuedAt(Instant.now())
+                .expiresAt(Instant.now().plus(600, ChronoUnit.SECONDS))
+                .claim("authorities", authorities)
+                .build();
+        return jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
     }
 }

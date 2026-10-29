@@ -22,7 +22,7 @@ A Java - Spring Boot implementation for 2 services of the serviced-based archite
     rm public.key private.key
     ```
 
-3. Start the database:
+3. Start the database and kafka containers:
 
     ```bash
     docker compose up -d
@@ -40,4 +40,21 @@ A Java - Spring Boot implementation for 2 services of the serviced-based archite
     ```bash
     cd access && ./gradlew bootRun
     ```
+
+Now you can send request to service Attendance (`localhost:8080`) and service Access (`localhost:8081`) through an API client like Postman.
+
+## Send requests with Postman
+
+1. Login with the system generated ADMIN account with Basic Auth, and copy the response JWT: 
+    
+    - Username: `admin@tmc.com`
+    - Password: `password`
+
+    ![Login](figures/login.png)
+
+2. Use the copied JWT to authenticate every other requests with Bearer Token (the JWT is valid for 10 minutes)
+
+    ![Bearer](figures/bearer.png)
+
+
 

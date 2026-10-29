@@ -86,4 +86,12 @@ public class AppUser {
         this.active = active;
     }
 
+    public List<Attendance> getAttendances() {
+        return attendances;
+    }
+
+    public void setAttendances(List<Attendance> attendances) {
+        this.attendances = attendances;
+    }
+
 }

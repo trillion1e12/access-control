@@ -57,7 +57,7 @@ public class SecurityConfig {
                 ))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/users/token").permitAll()
-                        .requestMatchers("/users/*").hasAnyRole(UserRole.ADMIN.toString())
+                        .requestMatchers("/users").hasAnyRole(UserRole.ADMIN.toString())
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

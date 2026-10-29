@@ -1,5 +1,7 @@
 package com.tmc.attendance.user;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
@@ -9,7 +11,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+
+import com.tmc.attendance.attendance.Attendance;
 
 @Entity
 @Table(name = "users")
@@ -29,6 +34,9 @@ public class AppUser {
     private String name;
 
     private boolean active;
+
+    @OneToMany(mappedBy = "appUser")
+    private List<Attendance> attendances = new ArrayList<>();
 
     public UUID getId() {
         return id;

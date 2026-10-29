@@ -1,6 +1,8 @@
 package com.tmc.attendance.attendance;
 
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import com.tmc.attendance.attendance.dto.AttendanceResponse;
 import com.tmc.attendance.attendance.dto.CreateAttendanceRequest;
@@ -12,6 +14,7 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final UserRepository userRepository;
     private final AttendanceMapper attendanceMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AttendanceService(
             AttendanceRepository attendanceRepository,
@@ -28,5 +31,12 @@ public class AttendanceService {
         Attendance attendance = attendanceMapper.toEntity(request, appUser);
         Attendance createAttendance = attendanceRepository.save(attendance);
         return attendanceMapper.toResponse(createAttendance);
+    }
+
+    @KafkaListener(topics = "attendance", groupId = "demo")
+    public void listen(String rawMessage) {
+        System.out.println("Received from kafka: " + rawMessage);
+        AttendanceMessage message = objectMapper.readValue(rawMessage, AttendanceMessage.class);
+        System.out.println(message.toString());
     }
 }

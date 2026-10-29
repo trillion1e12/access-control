@@ -1,4 +1,6 @@
 package com.tmc.attendance.kafka;
+// https://youtu.be/5XW3f_39ipY
+// https://www.geeksforgeeks.org/advance-java/spring-boot-integration-with-kafka/
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;

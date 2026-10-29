@@ -22,7 +22,7 @@ A Java - Spring Boot implementation for 2 services of the serviced-based archite
     rm public.key private.key
     ```
 
-3. Start the database:
+3. Start the database and kafka containers:
 
     ```bash
     docker compose up -d

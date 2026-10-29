@@ -15,6 +15,14 @@ public class AttendanceMapper {
         return attendance;
     }
 
+    public Attendance toEntity(AttendanceMessage message, AppUser appUser) {
+        Attendance attendance = new Attendance();
+        attendance.setAppUser(appUser);
+        attendance.setEvent(message.event());
+        attendance.setCreatedAt(message.createdAt());
+        return attendance;
+    }
+
     public AttendanceResponse toResponse(Attendance attendance) {
         return new AttendanceResponse(
                 attendance.getId(),

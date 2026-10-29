@@ -25,7 +25,7 @@ public class AccessApplication {
         return args -> {
             ObjectMapper objectMapper = new ObjectMapper();
             AttendanceMessage message = new AttendanceMessage(
-                    UUID.fromString("00000000-0000-0000-0000-000000000000"),
+                    UUID.fromString("e1a8779f-f05a-4015-8a26-08e8c52e5493"),
                     AttendanceType.CHECK_IN,
                     Instant.now()
             );

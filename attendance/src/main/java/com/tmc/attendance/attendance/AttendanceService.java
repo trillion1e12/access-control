@@ -1,5 +1,7 @@
 package com.tmc.attendance.attendance;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
@@ -15,6 +17,7 @@ public class AttendanceService {
     private final UserRepository userRepository;
     private final AttendanceMapper attendanceMapper;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public AttendanceService(
             AttendanceRepository attendanceRepository,
@@ -35,8 +38,10 @@ public class AttendanceService {
 
     @KafkaListener(topics = "attendance", groupId = "demo")
     public void listen(String rawMessage) {
-        System.out.println("Received from kafka: " + rawMessage);
+        logger.info("Message received from kafka: " + rawMessage);
         AttendanceMessage message = objectMapper.readValue(rawMessage, AttendanceMessage.class);
-        System.out.println(message.toString());
+        AppUser appUser = userRepository.findById(message.userId()).orElseThrow();
+        Attendance attendance = attendanceMapper.toEntity(message, appUser);
+        attendanceRepository.save(attendance);
     }
 }

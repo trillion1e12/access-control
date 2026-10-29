@@ -22,7 +22,13 @@ A Java - Spring Boot implementation for 2 services of the serviced-based archite
     rm public.key private.key
     ```
 
-3. Run the 2 services (on 2 terminal):
+3. Start the database:
+
+    ```bash
+    docker compose up -d
+    ```
+
+4. Run the 2 services (on 2 terminal):
 
     Terminal 1
 

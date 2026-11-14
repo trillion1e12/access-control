@@ -3,6 +3,8 @@ plugins {
 	id 'org.springframework.boot' version '4.1.2'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'com.diffplug.spotless' version '8.8.0'
+	id 'checkstyle'
+	id 'com.github.spotbugs' version '6.5.13'
 }
 
 group = 'com.tmc'
@@ -65,4 +67,26 @@ spotless {
 		importOrder('java|javax', '', group)
 		endWithNewline()
 	}
+}
+
+checkstyle {
+	toolVersion = '14.4.0'
+	configFile = file('config/checkstyle/checkstyle.xml')
+	maxWarnings = 0
+}
+
+spotbugs {
+	toolVersion = '4.10.5'
+	effort = 'max'
+	reportLevel = 'medium'
+	excludeFilter = file('config/spotbugs/exclude.xml')
+}
+
+// Only production code is analysed; tests use mocks and fixtures that trigger noise.
+tasks.named('checkstyleTest') {
+	enabled = false
+}
+
+tasks.named('spotbugsTest') {
+	enabled = false
 }

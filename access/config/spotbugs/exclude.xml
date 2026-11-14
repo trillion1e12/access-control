@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- A JPA entity references other mutable entities by design. -->
+    <Match>
+        <Class name="~com\.tmc\.access\.(qrcode\.QrCode(\$Builder)?|user\.AppUser|attendance\.OutboxEvent)"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+    <!-- These classes keep a collaborator that is injected by the container and shared with other beans. -->
+    <Match>
+        <Class name="~com\.tmc\.access\.(turnstile\.HttpTurnstileClient|attendance\.KafkaAttendanceMessageSender)"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+    <!-- The request id is checked to contain only letters, digits and hyphens before it is written to the header. -->
+    <Match>
+        <Class name="com.tmc.access.web.RequestIdFilter"/>
+        <Bug pattern="HRS_REQUEST_PARAMETER_TO_HTTP_HEADER"/>
+    </Match>
+</FindBugsFilter>

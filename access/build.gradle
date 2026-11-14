@@ -39,11 +39,32 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-kafka-test'
+	testImplementation 'org.testcontainers:testcontainers-postgresql'
+	testImplementation 'org.testcontainers:testcontainers-kafka'
+	testImplementation 'org.awaitility:awaitility'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+	useJUnitPlatform {
+		excludeTags 'integration'
+	}
+}
+
+// Tests tagged "integration" start PostgreSQL and Kafka in containers, so they need a running Docker.
+tasks.register('integrationTest', Test) {
+	description = 'Runs the tests tagged integration against PostgreSQL and Kafka in containers.'
+	group = 'verification'
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+	useJUnitPlatform {
+		includeTags 'integration'
+	}
+	testLogging {
+		events 'passed', 'failed', 'skipped'
+		showStandardStreams = false
+	}
+	shouldRunAfter tasks.named('test')
 }
 
 spotless {

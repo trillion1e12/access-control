@@ -36,5 +36,16 @@ jobs:
     - name: Build "attendance" service with Gradle Wrapper
       run: cd attendance && ./gradlew build -x test
 
+    # Only classes named *Test: they need no database or broker. The context-load test is named *Tests and needs both.
+    - name: Run "attendance" unit tests
+      run: cd attendance && ./gradlew test --tests '*ServiceTest'
+
     - name: Build "access" service with Gradle Wrapper
       run: cd access && ./gradlew build -x test
+
+    - name: Run "access" unit tests
+      run: cd access && ./gradlew test --tests '*Test'
+
+    # Starts PostgreSQL and Kafka in containers; the runner provides Docker.
+    - name: Run "access" integration tests
+      run: cd access && ./gradlew integrationTest

@@ -1,3 +1,5 @@
 *.key
 .vscode
 .idea
+certs/*.crt
+certs/*.srl

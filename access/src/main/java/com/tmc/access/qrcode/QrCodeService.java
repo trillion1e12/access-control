@@ -1,35 +1,66 @@
 package com.tmc.access.qrcode;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 
-import org.springframework.kafka.core.KafkaTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
 
-import com.tmc.access.attendance.AttendanceMessage;
-import com.tmc.access.attendance.AttendanceType;
 import com.tmc.access.user.AppUser;
+import com.tmc.access.user.UserNotActiveException;
 import com.tmc.access.user.UserRepository;
 
+/** Issues QR codes. */
 @Service
 public class QrCodeService {
-    private final UserRepository userRepository;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private static final Logger LOGGER = LoggerFactory.getLogger(QrCodeService.class);
 
-    public QrCodeService(UserRepository userRepository, KafkaTemplate<String, String> kafkaTemplate) {
+    private final QrCodeRepository qrCodeRepository;
+    private final UserRepository userRepository;
+    private final TokenGenerator tokenGenerator;
+    private final QrImageEncoder qrImageEncoder;
+    private final Clock clock;
+    private final Duration timeToLive;
+
+    public QrCodeService(
+            QrCodeRepository qrCodeRepository,
+            UserRepository userRepository,
+            TokenGenerator tokenGenerator,
+            QrImageEncoder qrImageEncoder,
+            Clock clock,
+            @Value("${qr.ttl-seconds:60}") long ttlSeconds
+    ) {
+        this.qrCodeRepository = qrCodeRepository;
         this.userRepository = userRepository;
-        this.kafkaTemplate = kafkaTemplate;
+        this.tokenGenerator = tokenGenerator;
+        this.qrImageEncoder = qrImageEncoder;
+        this.clock = clock;
+        this.timeToLive = Duration.ofSeconds(ttlSeconds);
     }
 
-    public String testKafka() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        AppUser randomUser = userRepository.findAll().get(0);
-        AttendanceMessage message = new AttendanceMessage(
-                randomUser.getId(),
-                AttendanceType.CHECK_IN,
-                Instant.now()
-        );
-        kafkaTemplate.send("attendance", objectMapper.writeValueAsString(message));
-        return "Check database for new attendace of user " + randomUser.getId();
+    /**
+     * Issues a short-lived, single-use QR code for the user and returns it as a PNG
+     * image.
+     *
+     * @throws UserNotActiveException
+     *             when the user is unknown or inactive
+     */
+    public byte[] getQrCode(String email) {
+        AppUser appUser = userRepository.findByEmail(email)
+                .filter(AppUser::isActive)
+                .orElseThrow(() -> new UserNotActiveException("User is unknown or inactive"));
+        Instant now = clock.instant();
+        QrCode qrCode = QrCode.builder()
+                .appUser(appUser)
+                .content(tokenGenerator.newToken())
+                .createdAt(now)
+                .expiresAt(now.plus(timeToLive))
+                .build();
+        qrCodeRepository.save(qrCode);
+        LOGGER.info("QR code issued: userId={}, expiresAt={}", appUser.getId(), qrCode.getExpiresAt());
+        return qrImageEncoder.encode(qrCode.getContent());
     }
 }

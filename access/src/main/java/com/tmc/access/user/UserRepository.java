@@ -1,8 +1,13 @@
 package com.tmc.access.user;
 
+import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.Repository;
 
-public interface UserRepository extends JpaRepository<AppUser, UUID> {
+/** Read-only access to users. */
+public interface UserRepository extends Repository<AppUser, UUID> {
+    Optional<AppUser> findByEmail(String email);
+
+    Optional<AppUser> findFirstByActiveTrue();
 }

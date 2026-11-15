@@ -6,8 +6,6 @@ import org.springframework.http.MediaType;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
-import com.tmc.access.attendance.AttendanceType;
-
 /**
  * Calls the gate-opening endpoint of the turnstile control system over HTTP.
  * The default path and the body used here are an assumption until the real API
@@ -23,16 +21,24 @@ public class HttpTurnstileClient implements TurnstileClient {
     }
 
     @Override
-    public void openGate(AttendanceType direction) {
+    public void openGate(Direction direction) {
         try {
             restClient.post()
                     .uri(openGatePath)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(Map.of("event", direction.name()))
+                    .body(Map.of("event", wireValue(direction)))
                     .retrieve()
                     .toBodilessEntity();
         } catch (RestClientException e) {
             throw new TurnstileUnavailableException("Turnstile control system did not accept the request", e);
         }
+    }
+
+    /** The value the request body carries; part of the assumed contract above. */
+    private static String wireValue(Direction direction) {
+        return switch (direction) {
+            case ENTRY -> "CHECK_IN";
+            case EXIT -> "CHECK_OUT";
+        };
     }
 }

@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.tmc.access.attendance.AttendanceEventPublisher;
 import com.tmc.access.attendance.AttendanceMessage;
 import com.tmc.access.attendance.AttendanceType;
+import com.tmc.access.turnstile.Direction;
 import com.tmc.access.turnstile.TurnstileClient;
 
 /** Decides whether a presented credential opens the gate. */
@@ -67,9 +68,16 @@ public class AccessDecisionService {
         attendanceEventPublisher.publish(
                 new AttendanceMessage(verified.credentialId(), verified.appUser().getId(), event, now)
         );
-        turnstileClient.openGate(event);
+        turnstileClient.openGate(directionOf(event));
         LOGGER.info("Gate opened: method={}, credentialId={}, userId={}, event={}", method,
                 verified.credentialId(), verified.appUser().getId(), event);
         return ACCESS_GRANTED;
+    }
+
+    private static Direction directionOf(AttendanceType event) {
+        return switch (event) {
+            case CHECK_IN -> Direction.ENTRY;
+            case CHECK_OUT -> Direction.EXIT;
+        };
     }
 }

@@ -5,6 +5,11 @@
         <Class name="~com\.tmc\.access\.(qrcode\.QrCode(\$Builder)?|user\.AppUser|attendance\.OutboxEvent)"/>
         <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
     </Match>
+    <!-- The result of a credential check carries the user entity as it was loaded; it is read, not modified. -->
+    <Match>
+        <Class name="com.tmc.access.decision.VerifiedCredential"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
     <!-- These classes keep a collaborator that is injected by the container and shared with other beans. -->
     <Match>
         <Class name="~com\.tmc\.access\.(turnstile\.HttpTurnstileClient|attendance\.KafkaAttendanceMessageSender)"/>

@@ -31,7 +31,7 @@ public class QrCodeController {
 
     @PostMapping
     public String verifyQrCode(@RequestBody @Valid VerifyQrCodeRequest request) {
-        return accessDecisionService.verifyQrCode(request.content(), request.event());
+        return accessDecisionService.verify(QrCredentialVerifier.METHOD, request.content(), request.event());
     }
 
 }

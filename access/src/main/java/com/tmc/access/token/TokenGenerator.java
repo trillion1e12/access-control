@@ -1,6 +1,9 @@
-package com.tmc.access.qrcode;
+package com.tmc.access.token;
 
-/** Produces the text carried by a QR code. */
+/**
+ * Produces random values that serve as secrets, such as the text a QR code
+ * carries.
+ */
 public interface TokenGenerator {
     /**
      * @return a value that cannot be guessed and is not derived from any user data

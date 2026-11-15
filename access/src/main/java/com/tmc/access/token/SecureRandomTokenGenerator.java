@@ -1,4 +1,4 @@
-package com.tmc.access.qrcode;
+package com.tmc.access.token;
 
 import java.security.SecureRandom;
 import java.util.Base64;

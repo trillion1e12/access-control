@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.tmc.access.token.TokenGenerator;
 import com.tmc.access.user.AppUser;
 import com.tmc.access.user.UserNotActiveException;
 import com.tmc.access.user.UserRepository;

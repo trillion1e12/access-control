@@ -1,4 +1,4 @@
-package com.tmc.access.attendance;
+package com.tmc.access.outbox;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
+
+import com.tmc.access.attendance.AttendanceMessage;
 
 /**
  * Sends attendance messages as JSON to a Kafka topic, keyed by user so one

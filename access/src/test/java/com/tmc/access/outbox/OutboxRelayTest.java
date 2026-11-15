@@ -1,4 +1,4 @@
-package com.tmc.access.attendance;
+package com.tmc.access.outbox;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
+
+import com.tmc.access.attendance.AttendanceType;
 
 class OutboxRelayTest {
     private static final Instant NOW = Instant.parse("2026-11-13T01:00:00Z");

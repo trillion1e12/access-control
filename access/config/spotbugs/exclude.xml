@@ -2,7 +2,7 @@
 <FindBugsFilter>
     <!-- A JPA entity references other mutable entities by design. -->
     <Match>
-        <Class name="~com\.tmc\.access\.(qrcode\.QrCode(\$Builder)?|user\.AppUser|attendance\.OutboxEvent)"/>
+        <Class name="~com\.tmc\.access\.(qrcode\.QrCode(\$Builder)?|user\.AppUser|outbox\.OutboxEvent)"/>
         <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
     </Match>
     <!-- The result of a credential check carries the user entity as it was loaded; it is read, not modified. -->
@@ -12,7 +12,7 @@
     </Match>
     <!-- These classes keep a collaborator that is injected by the container and shared with other beans. -->
     <Match>
-        <Class name="~com\.tmc\.access\.(turnstile\.HttpTurnstileClient|attendance\.KafkaAttendanceMessageSender)"/>
+        <Class name="~com\.tmc\.access\.(turnstile\.HttpTurnstileClient|outbox\.KafkaAttendanceMessageSender)"/>
         <Bug pattern="EI_EXPOSE_REP2"/>
     </Match>
     <!-- The request id is checked to contain only letters, digits and hyphens before it is written to the header. -->

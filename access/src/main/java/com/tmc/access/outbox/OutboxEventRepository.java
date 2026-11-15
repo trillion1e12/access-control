@@ -1,4 +1,4 @@
-package com.tmc.access.attendance;
+package com.tmc.access.outbox;
 
 import java.util.List;
 import java.util.UUID;

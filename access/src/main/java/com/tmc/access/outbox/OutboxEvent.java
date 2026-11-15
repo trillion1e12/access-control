@@ -1,4 +1,4 @@
-package com.tmc.access.attendance;
+package com.tmc.access.outbox;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -8,6 +8,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+
+import com.tmc.access.attendance.AttendanceMessage;
+import com.tmc.access.attendance.AttendanceType;
 
 /**
  * An attendance message waiting to be sent, stored so that it survives a broker

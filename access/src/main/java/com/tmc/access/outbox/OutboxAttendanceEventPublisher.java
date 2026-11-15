@@ -1,6 +1,9 @@
-package com.tmc.access.attendance;
+package com.tmc.access.outbox;
 
 import org.springframework.stereotype.Component;
+
+import com.tmc.access.attendance.AttendanceEventPublisher;
+import com.tmc.access.attendance.AttendanceMessage;
 
 /**
  * Stores the message in the outbox table; {@link OutboxRelay} sends it

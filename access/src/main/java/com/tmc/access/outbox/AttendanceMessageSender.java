@@ -1,4 +1,6 @@
-package com.tmc.access.attendance;
+package com.tmc.access.outbox;
+
+import com.tmc.access.attendance.AttendanceMessage;
 
 /**
  * Delivers one attendance message to the consumer side and confirms that it was

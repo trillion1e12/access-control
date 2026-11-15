@@ -1,4 +1,4 @@
-package com.tmc.access.attendance;
+package com.tmc.access.demo;
 
 import java.time.Clock;
 import java.util.UUID;
@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tmc.access.attendance.AttendanceEventPublisher;
+import com.tmc.access.attendance.AttendanceMessage;
+import com.tmc.access.attendance.AttendanceType;
 import com.tmc.access.user.AppUser;
 import com.tmc.access.user.UserRepository;
 

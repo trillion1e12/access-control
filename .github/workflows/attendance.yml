@@ -1,0 +1,92 @@
+name: Attendance CI
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'attendance/**'
+      - '.github/workflows/attendance.yml'
+  pull_request:
+    branches: ['main']
+    paths:
+      - 'attendance/**'
+      - '.github/workflows/attendance.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      kafka:
+        image: apache/kafka:latest
+        env:
+          KAFKA_NODE_ID: 1
+          KAFKA_PROCESS_ROLES: broker,controller
+          KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+          KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+        ports:
+          - 9092:9092
+        options: >-
+          --health-cmd "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 10
+
+    env:
+      DB_URL: jdbc:postgresql://localhost:5432/postgres
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+      JWT_PUBLIC_KEY: file:${{ github.workspace }}/ci-keys/public.key
+      JWT_PRIVATE_KEY: file:${{ github.workspace }}/ci-keys/private.key
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Generate JWT keys
+        run: |
+          mkdir -p ci-keys
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out ci-keys/private.key
+          openssl pkey -in ci-keys/private.key -pubout -out ci-keys/public.key
+
+      - name: Build and test attendance
+        run: ./gradlew build
+        working-directory: attendance
+
+      - name: Upload test reports on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: attendance-test-reports
+          path: attendance/build/reports/tests/test/

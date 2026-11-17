@@ -58,4 +58,27 @@ public class AttendanceService {
         return attendances.stream().map(attendanceMapper::toResponse).toList();
     }
 
+    public List<AttendanceResponse> getAttendancesByUserId(
+            UUID userId,
+            Instant start,
+            Instant end,
+            Authentication authentication
+    ) {
+        AppUser targetUser = userRepository.findById(userId).orElseThrow();
+        if (!canViewAttendanceOf(authentication, targetUser)) {
+            throw new AccessDeniedException(
+                    "User " + authentication.getName() + " may not view attendance of user " + userId);
+        }
+        List<Attendance> attendances = attendanceRepository
+                .findByAppUserIdAndCreatedAtBetweenOrderByCreatedAtAsc(userId, start, end);
+        return attendances.stream().map(attendanceMapper::toResponse).toList();
+    }
+
+    private boolean canViewAttendanceOf(Authentication authentication, AppUser targetUser) {
+        boolean isAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(authority -> UserRole.ADMIN.toAuthorityString().equals(authority.getAuthority()));
+        boolean isSelf = authentication.getName().equals(targetUser.getEmail());
+        return isAdmin || isSelf;
+    }
 }

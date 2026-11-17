@@ -36,4 +36,13 @@ public class AttendanceController {
         return attendanceService.getAttendances(start, end);
     }
 
+    @GetMapping("/{userId}")
+    public List<AttendanceResponse> getAttendancesByUserId(
+            @PathVariable UUID userId,
+            @RequestParam Instant start,
+            @RequestParam Instant end,
+            Authentication authentication
+    ) {
+        return attendanceService.getAttendancesByUserId(userId, start, end, authentication);
+    }
 }

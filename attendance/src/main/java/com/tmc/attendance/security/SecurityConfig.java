@@ -58,6 +58,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/users/token").permitAll()
                         .requestMatchers("/users/**").hasRole(UserRole.ADMIN.toString())
+                        .requestMatchers(HttpMethod.POST, "/attendances").hasRole(UserRole.ADMIN.toString())
+                        .requestMatchers(HttpMethod.GET, "/attendances").hasRole(UserRole.ADMIN.toString())
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

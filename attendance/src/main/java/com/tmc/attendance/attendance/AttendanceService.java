@@ -1,9 +1,15 @@
 package com.tmc.attendance.attendance;
 // https://www.baeldung.com/jackson-object-mapper-tutorial
 
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
@@ -11,6 +17,7 @@ import com.tmc.attendance.attendance.dto.AttendanceResponse;
 import com.tmc.attendance.attendance.dto.CreateAttendanceRequest;
 import com.tmc.attendance.user.AppUser;
 import com.tmc.attendance.user.UserRepository;
+import com.tmc.attendance.user.UserRole;
 
 @Service
 public class AttendanceService {
@@ -45,4 +52,10 @@ public class AttendanceService {
         Attendance attendance = attendanceMapper.toEntity(message, appUser);
         attendanceRepository.save(attendance);
     }
+
+    public List<AttendanceResponse> getAttendances(Instant start, Instant end) {
+        List<Attendance> attendances = attendanceRepository.findByCreatedAtBetweenOrderByCreatedAtAsc(start, end);
+        return attendances.stream().map(attendanceMapper::toResponse).toList();
+    }
+
 }

@@ -1,11 +1,7 @@
 package com.tmc.attendance.attendance;
-// https://www.baeldung.com/jackson-object-mapper-tutorial
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
 
 import com.tmc.attendance.attendance.dto.AttendanceResponse;
 import com.tmc.attendance.attendance.dto.CreateAttendanceRequest;
@@ -17,8 +13,6 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final UserRepository userRepository;
     private final AttendanceMapper attendanceMapper;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public AttendanceService(
             AttendanceRepository attendanceRepository,
@@ -37,12 +31,33 @@ public class AttendanceService {
         return attendanceMapper.toResponse(createAttendance);
     }
 
-    @KafkaListener(topics = "attendance", groupId = "demo")
-    public void listen(String rawMessage) {
-        logger.info("Message received from kafka: " + rawMessage);
-        AttendanceMessage message = objectMapper.readValue(rawMessage, AttendanceMessage.class);
-        AppUser appUser = userRepository.findById(message.userId()).orElseThrow();
-        Attendance attendance = attendanceMapper.toEntity(message, appUser);
-        attendanceRepository.save(attendance);
+    /**
+     * Records the entry or exit carried by a message. Recording the same event id
+     * twice keeps a single row.
+     *
+     * @return false when the event had already been recorded
+     * @throws InvalidAttendanceMessageException
+     *             when a required field is missing or the user does not exist
+     */
+    public boolean recordAttendance(AttendanceMessage message) {
+        if (message.eventId() == null || message.userId() == null || message.event() == null) {
+            throw new InvalidAttendanceMessageException("Attendance message is missing a required field");
+        }
+        if (attendanceRepository.existsBySourceEventId(message.eventId())) {
+            return false;
+        }
+        AppUser appUser = userRepository.findById(message.userId())
+                .orElseThrow(() -> new InvalidAttendanceMessageException(
+                        "Attendance message refers to unknown user " + message.userId()));
+        try {
+            attendanceRepository.saveAndFlush(attendanceMapper.toEntity(message, appUser));
+            return true;
+        } catch (DataIntegrityViolationException e) {
+            // Another consumer stored the same event between the check and the insert.
+            if (attendanceRepository.existsBySourceEventId(message.eventId())) {
+                return false;
+            }
+            throw e;
+        }
     }
 }

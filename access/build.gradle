@@ -3,6 +3,8 @@ plugins {
 	id 'org.springframework.boot' version '4.1.2'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'com.diffplug.spotless' version '8.8.0'
+	id 'checkstyle'
+	id 'com.github.spotbugs' version '6.5.13'
 }
 
 group = 'com.tmc'
@@ -26,6 +28,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
 	implementation 'org.springframework.boot:spring-boot-starter-kafka'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'com.google.zxing:core:3.5.3'
+	implementation 'com.google.zxing:javase:3.5.3'
 	runtimeOnly 'org.postgresql:postgresql'
 	runtimeOnly 'com.h2database:h2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
@@ -34,11 +39,32 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-kafka-test'
+	testImplementation 'org.testcontainers:testcontainers-postgresql'
+	testImplementation 'org.testcontainers:testcontainers-kafka'
+	testImplementation 'org.awaitility:awaitility'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+	useJUnitPlatform {
+		excludeTags 'integration'
+	}
+}
+
+// Tests tagged "integration" start PostgreSQL and Kafka in containers, so they need a running Docker.
+tasks.register('integrationTest', Test) {
+	description = 'Runs the tests tagged integration against PostgreSQL and Kafka in containers.'
+	group = 'verification'
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+	useJUnitPlatform {
+		includeTags 'integration'
+	}
+	testLogging {
+		events 'passed', 'failed', 'skipped'
+		showStandardStreams = false
+	}
+	shouldRunAfter tasks.named('test')
 }
 
 spotless {
@@ -62,4 +88,26 @@ spotless {
 		importOrder('java|javax', '', group)
 		endWithNewline()
 	}
+}
+
+checkstyle {
+	toolVersion = '14.4.0'
+	configFile = file('config/checkstyle/checkstyle.xml')
+	maxWarnings = 0
+}
+
+spotbugs {
+	toolVersion = '4.10.5'
+	effort = 'max'
+	reportLevel = 'medium'
+	excludeFilter = file('config/spotbugs/exclude.xml')
+}
+
+// Only production code is analysed; tests use mocks and fixtures that trigger noise.
+tasks.named('checkstyleTest') {
+	enabled = false
+}
+
+tasks.named('spotbugsTest') {
+	enabled = false
 }

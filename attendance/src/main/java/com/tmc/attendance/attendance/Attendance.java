@@ -3,6 +3,7 @@ package com.tmc.attendance.attendance;
 import java.time.Instant;
 import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -32,6 +33,12 @@ public class Attendance {
 
     @CreationTimestamp
     private Instant createdAt;
+
+    /**
+     * Id of the message this row was recorded from; null for a row created by hand.
+     */
+    @Column(unique = true)
+    private UUID sourceEventId;
 
     public UUID getId() {
         return id;
@@ -63,6 +70,14 @@ public class Attendance {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public UUID getSourceEventId() {
+        return sourceEventId;
+    }
+
+    public void setSourceEventId(UUID sourceEventId) {
+        this.sourceEventId = sourceEventId;
     }
 
 }

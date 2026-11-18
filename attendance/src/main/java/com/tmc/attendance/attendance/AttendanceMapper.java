@@ -20,6 +20,7 @@ public class AttendanceMapper {
         attendance.setAppUser(appUser);
         attendance.setEvent(message.event());
         attendance.setCreatedAt(message.createdAt());
+        attendance.setSourceEventId(message.eventId());
         return attendance;
     }
 
